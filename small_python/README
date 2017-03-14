@@ -1,0 +1,6 @@
+This is a simplistic example code which explains 
+how CPython's builtin object is implemented.
+
+The original author is Chen Ru, who authored the Chinese book 
+"Python Source Code Analysis". I made a few minor modifications
+to make the code clearer.
