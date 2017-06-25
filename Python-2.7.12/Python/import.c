@@ -152,6 +152,7 @@ _PyImport_Init(void)
     struct filedescr *filetab;
     int countD = 0;
     int countS = 0;
+    printf("%s\n", __func__);
 
     /* prepare _PyImport_Filetab: copy entries from
        _PyImport_DynLoadFiletab and _PyImport_StandardFiletab.
@@ -202,6 +203,7 @@ _PyImportHooks_Init(void)
     PyObject *v, *path_hooks = NULL, *zimpimport;
     int err = 0;
 
+    printf("%s\n", __func__);
     /* adding sys.path_hooks and sys.path_importer_cache, setting up
        zipimport */
     if (PyType_Ready(&PyNullImporter_Type) < 0)
@@ -561,6 +563,7 @@ PyImport_Cleanup(void)
 long
 PyImport_GetMagicNumber(void)
 {
+    printf("%d\n", pyc_magic);
     return pyc_magic;
 }
 
@@ -3314,6 +3317,7 @@ setint(PyObject *d, char *name, int value)
 {
     PyObject *v;
     int err;
+    printf("%s %d\n", name, value);
 
     v = PyInt_FromLong((long)value);
     err = PyDict_SetItemString(d, name, v);

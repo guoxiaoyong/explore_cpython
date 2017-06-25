@@ -1178,6 +1178,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
         dxp[opcode]++;
 #endif
 
+#define LLTRACE
 #ifdef LLTRACE
         /* Instruction tracing */
 
@@ -1196,7 +1197,10 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
         /* Main switch on opcode */
         READ_TIMESTAMP(inst0);
 
+        #include "opname.h"
+        printf("%s, %s\n", opname[opcode], PyString_AS_STRING(co->co_filename));
         switch (opcode) {
+
 
         /* BEWARE!
            It is essential that any operation that fails sets either
@@ -1280,7 +1284,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
             FAST_DISPATCH();
         }
 
-       
+
         TARGET_NOARG(DUP_TOP)
         {
             v = TOP();
@@ -1823,7 +1827,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
         }
 
 
-     
+
         TARGET_WITH_IMPL_NOARG(SLICE, _slice)
         TARGET_WITH_IMPL_NOARG(SLICE_1, _slice)
         TARGET_WITH_IMPL_NOARG(SLICE_2, _slice)
@@ -1848,7 +1852,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
             break;
         }
 
-     
+
         TARGET_WITH_IMPL_NOARG(STORE_SLICE, _store_slice)
         TARGET_WITH_IMPL_NOARG(STORE_SLICE_1, _store_slice)
         TARGET_WITH_IMPL_NOARG(STORE_SLICE_2, _store_slice)
@@ -2314,11 +2318,15 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
                     PyErr_Clear();
                 }
             }
+            if (x) printf("Found name [%s] in local namespace.\n", PyString_AS_STRING(w));
             if (x == NULL) {
                 x = PyDict_GetItem(f->f_globals, w);
+                if (x) printf("Found name [%s] in global namespace.\n", PyString_AS_STRING(w));
                 if (x == NULL) {
                     x = PyDict_GetItem(f->f_builtins, w);
+                    if (x) printf("Found name [%s] in builtin namespace.\n", PyString_AS_STRING(w));
                     if (x == NULL) {
+                        printf("Name [%s] not found.\n", PyString_AS_STRING(w));
                         format_exc_check_arg(
                                     PyExc_NameError,
                                     NAME_ERROR_MSG, w);

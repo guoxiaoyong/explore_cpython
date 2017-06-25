@@ -672,6 +672,7 @@ dictresize(PyDictObject *mp, Py_ssize_t minused)
         /* else key == value == NULL:  nothing to do */
     }
 
+    //printf("dict resize: minused = %d, newsize = %d\n", minused, newsize);
     if (is_oldtable_malloced)
         PyMem_DEL(oldtable);
     return 0;
@@ -1052,6 +1053,10 @@ dict_dealloc(register PyDictObject *mp)
 static int
 dict_print(register PyDictObject *mp, register FILE *fp, register int flags)
 {
+    printf("PyDict_MINSIZE = %d\n", PyDict_MINSIZE);
+    printf("ma_fill = %d, ma_used = %d, ma_mask = %d\n", mp->ma_fill, mp->ma_used, mp->ma_mask);
+    printf("ma_table = @%p, ma_smalltable = @%p\n", mp->ma_table, &mp->ma_smalltable);
+
     register Py_ssize_t i;
     register Py_ssize_t any;
     int status;

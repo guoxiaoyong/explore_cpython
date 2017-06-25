@@ -320,6 +320,9 @@ list_dealloc(PyListObject *op)
 static int
 list_print(PyListObject *op, FILE *fp, int flags)
 {
+
+    printf("ob_size = %d, allocated = %d, ob_item = @%p\n", op->ob_size, op->allocated, op->ob_item);
+
     int rc;
     Py_ssize_t i;
     PyObject *item;

@@ -56,6 +56,13 @@ static PyObject *interned;
 PyObject *
 PyString_FromStringAndSize(const char *str, Py_ssize_t size)
 {
+#if 0
+    printf("%s :", __func__);
+    if (size > 0)
+      for (int n=0; n < (int)size; n++) ;//printf("%c", str[n]);
+    printf("\n");
+#endif
+
     register PyStringObject *op;
     if (size < 0) {
         PyErr_SetString(PyExc_SystemError,
@@ -116,6 +123,7 @@ PyString_FromString(const char *str)
 {
     register size_t size;
     register PyStringObject *op;
+    //printf("%s %s\n", __func__, str);
 
     assert(str != NULL);
     size = strlen(str);
@@ -576,6 +584,20 @@ PyObject *PyString_AsEncodedString(PyObject *str,
 static void
 string_dealloc(PyObject *op)
 {
+#if 0
+    PyStringObject* p;
+    p = (PyStringObject*)op;
+    int siz = p->ob_size;
+    printf("%s, ", __func__);
+    for (int n = 0; n < siz; n++) {
+      if (isprint(p->ob_sval[n] || p->ob_sval[n] == 0x0a)) {
+          printf("%c", p->ob_sval[n]);
+      } else {
+          printf("|%02x|", (int)(unsigned char)p->ob_sval[n]);
+      }
+    }
+#endif
+
     switch (PyString_CHECK_INTERNED(op)) {
         case SSTATE_NOT_INTERNED:
             break;
@@ -4731,6 +4753,7 @@ void
 PyString_InternInPlace(PyObject **p)
 {
     register PyStringObject *s = (PyStringObject *)(*p);
+    //printf("%s\n", s->ob_sval);
     PyObject *t;
     if (s == NULL || !PyString_Check(s))
         Py_FatalError("PyString_InternInPlace: strings only please!");

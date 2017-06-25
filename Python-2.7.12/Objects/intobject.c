@@ -10,6 +10,7 @@ static PyObject *int_int(PyIntObject *v);
 long
 PyInt_GetMax(void)
 {
+    // printf("%s called!\n", __func__);
     return LONG_MAX;            /* To initialize sys.maxint */
 }
 
@@ -47,6 +48,10 @@ static PyIntObject *free_list = NULL;
 static PyIntObject *
 fill_free_list(void)
 {
+    /*
+    printf("%s called!\n", __func__);
+    printf("N_INTOBJECTS = %d\n", N_INTOBJECTS);
+    */
     PyIntObject *p, *q;
     /* Python's object allocator isn't appropriate for large blocks. */
     p = (PyIntObject *) PyMem_MALLOC(sizeof(PyIntBlock));
@@ -65,10 +70,10 @@ fill_free_list(void)
 }
 
 #ifndef NSMALLPOSINTS
-#define NSMALLPOSINTS           257
+#define NSMALLPOSINTS          5
 #endif
 #ifndef NSMALLNEGINTS
-#define NSMALLNEGINTS           5
+#define NSMALLNEGINTS          5
 #endif
 #if NSMALLNEGINTS + NSMALLPOSINTS > 0
 /* References to small integers are saved in this array so that they
@@ -104,11 +109,13 @@ PyInt_FromLong(long ival)
         if ((free_list = fill_free_list()) == NULL)
             return NULL;
     }
+    //printf("use object at @%p\n", free_list);
     /* Inline PyObject_New */
     v = free_list;
     free_list = (PyIntObject *)Py_TYPE(v);
     PyObject_INIT(v, &PyInt_Type);
     v->ob_ival = ival;
+    //printf("%s, ival = %ld\n", __func__, ival);
     return (PyObject *) v;
 }
 
@@ -443,6 +450,36 @@ static int
 int_print(PyIntObject *v, FILE *fp, int flags)
      /* flags -- not used but required by interface */
 {
+#if 0
+    printf("N_INTOBJECTS = %d\n", N_INTOBJECTS);
+    PyIntBlock* p = block_list;
+    int num_of_blocks = 0;
+    while (p != NULL) {
+      int n;
+      for (n = 0; n < N_INTOBJECTS; n++) {
+      /*
+        printf("val = %d, refcnt = %d, addr = @%p\n",
+            p->objects[n].ob_ival,
+            p->objects[n].ob_refcnt,
+            &(p->objects[n]));
+            */
+      }
+      num_of_blocks++;
+      p = p->next;
+    }
+    printf("Num of Blocks = %d\n", num_of_blocks);
+
+    PyIntObject* q = free_list;
+    int num_of_freeobj = 0;
+    while (q != NULL) {
+      printf("FREE val = %d, refcnt = %d, addr = @%p\n",
+          q->ob_ival, q->ob_refcnt, q);
+      num_of_freeobj++;
+      q = (PyIntObject*)q->ob_type;
+    }
+    printf("Num of Free Objects = %d\n", num_of_freeobj);
+    #endif
+
     long int_val = v->ob_ival;
     Py_BEGIN_ALLOW_THREADS
     fprintf(fp, "%ld", int_val);
@@ -1537,6 +1574,7 @@ PyInt_Fini(void)
     int i;
     int u;                      /* total unfreed ints per block */
 
+    printf("%s called!\n", __func__);
 #if NSMALLNEGINTS + NSMALLPOSINTS > 0
     PyIntObject **q;
 
