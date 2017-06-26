@@ -1,4 +1,10 @@
-import dis, marshal, struct, sys, time, types
+import dis
+import marshal
+import struct
+import sys
+import time
+import types
+import py_compile
 
 def show_file(fname):
     f = open(fname, "rb")
@@ -43,4 +49,5 @@ def show_hex(label, h, indent):
         for i in range(0, len(h), 60):
             print "%s   %s" % (indent, h[i:i+60])
 
-show_file(sys.argv[1])
+py_compile.compile(sys.argv[1])
+show_file(sys.argv[1]+'c')
