@@ -627,6 +627,8 @@ PyFrame_New(PyThreadState *tstate, PyCodeObject *code, PyObject *globals,
     PyObject *builtins;
     Py_ssize_t i;
 
+    char* filename = PyString_AS_STRING(code->co_filename); // xguo
+
 #ifdef Py_DEBUG
     if (code == NULL || globals == NULL || !PyDict_Check(globals) ||
         (locals != NULL && !PyMapping_Check(locals))) {

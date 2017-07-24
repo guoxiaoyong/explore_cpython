@@ -11,6 +11,7 @@
 
 #include "Python.h"
 
+#include "opname.h"
 #include "code.h"
 #include "frameobject.h"
 #include "eval.h"
@@ -122,10 +123,8 @@ static PyObject * load_args(PyObject ***, int);
 #define CALL_FLAG_VAR 1
 #define CALL_FLAG_KW 2
 
-#ifdef LLTRACE
 static int lltrace;
 static int prtrace(PyObject *, char *);
-#endif
 static int call_trace(Py_tracefunc, PyObject *, PyFrameObject *,
                       int, PyObject *);
 static int call_trace_protected(Py_tracefunc, PyObject *,
@@ -688,6 +687,7 @@ PyEval_EvalFrame(PyFrameObject *f) {
 PyObject *
 PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
 {
+#undef USE_COMPUTED_GOTOS
 #ifdef DYNAMIC_EXECUTION_PROFILE
   #undef USE_COMPUTED_GOTOS
 #endif
@@ -814,10 +814,8 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
     unsigned char *first_instr;
     PyObject *names;
     PyObject *consts;
-#if defined(Py_DEBUG) || defined(LLTRACE)
     /* Make it easier to find out where we are with a debugger */
     char *filename;
-#endif
 
 /* Tuple access macros */
 
@@ -1040,9 +1038,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
 #ifdef LLTRACE
     lltrace = PyDict_GetItemString(f->f_globals, "__lltrace__") != NULL;
 #endif
-#if defined(Py_DEBUG) || defined(LLTRACE)
     filename = PyString_AsString(co->co_filename);
-#endif
 
     why = WHY_NOT;
     err = 0;
@@ -1178,27 +1174,22 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
         dxp[opcode]++;
 #endif
 
-#define LLTRACE
-#ifdef LLTRACE
         /* Instruction tracing */
-
-        if (lltrace) {
+        if (1) {
             if (HAS_ARG(opcode)) {
-                printf("%d: %d, %d\n",
-                       f->f_lasti, opcode, oparg);
+                printf("%d: %s, %d\n",
+                       f->f_lasti, opname[opcode], oparg);
             }
             else {
                 printf("%d: %d\n",
-                       f->f_lasti, opcode);
+                       f->f_lasti, opname[opcode]);
             }
         }
-#endif
 
         /* Main switch on opcode */
         READ_TIMESTAMP(inst0);
 
-        #include "opname.h"
-        printf("%s, %s\n", opname[opcode], PyString_AS_STRING(co->co_filename));
+        //printf("%s, %s\n", opname[opcode], PyString_AS_STRING(co->co_filename));
         switch (opcode) {
 
 
@@ -2174,10 +2165,13 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
             w = GETITEM(names, oparg);
             v = POP();
             if ((x = f->f_locals) != NULL) {
-                if (PyDict_CheckExact(x))
+                if (PyDict_CheckExact(x)) {
                     err = PyDict_SetItem(x, w, v);
-                else
+                    printf("f_locals is PyDict!\n");  // xguo
+                } else {
                     err = PyObject_SetItem(x, w, v);
+                    printf("f_locals is Object!\n");  // xguo
+                }
                 Py_DECREF(v);
                 if (err == 0) DISPATCH();
                 break;
@@ -2318,13 +2312,22 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
                     PyErr_Clear();
                 }
             }
-            if (x) printf("Found name [%s] in local namespace.\n", PyString_AS_STRING(w));
+            if (x) {
+                printf("Found name [%s] in local namespace.\n", 
+                       PyString_AS_STRING(w));
+            }
             if (x == NULL) {
                 x = PyDict_GetItem(f->f_globals, w);
-                if (x) printf("Found name [%s] in global namespace.\n", PyString_AS_STRING(w));
+                if (x) { 
+                    printf("Found name [%s] in global namespace.\n", 
+                           PyString_AS_STRING(w));
+                }
                 if (x == NULL) {
                     x = PyDict_GetItem(f->f_builtins, w);
-                    if (x) printf("Found name [%s] in builtin namespace.\n", PyString_AS_STRING(w));
+                    if (x) {
+                        printf("Found name [%s] in builtin namespace.\n", 
+                               PyString_AS_STRING(w));
+                    }
                     if (x == NULL) {
                         printf("Name [%s] not found.\n", PyString_AS_STRING(w));
                         format_exc_check_arg(

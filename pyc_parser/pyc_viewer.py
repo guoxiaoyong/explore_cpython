@@ -77,7 +77,7 @@ class PycViewer(object):
         codeobj_list.append(const)
         self._write_string("<code object>", depth+2)
       else:
-        self._write_string("%r" % const, depth=depth+2)
+        self._write_string("%r" % (const,), depth=depth+2)
 
     self._write_string("varnames: %r" % (code.co_varnames,), depth+1)
     self._write_string("freevars: %r" % (code.co_freevars,), depth+1)

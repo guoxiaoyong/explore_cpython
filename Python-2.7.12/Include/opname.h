@@ -89,8 +89,8 @@ char* opname[] = {
 "POP_BLOCK",
 "END_FINALLY",
 "BUILD_CLASS",
-"STORE_NAME",
-"DELETE_NAME",
+"STORE_NAME",  // done, store name to f_locals
+"DELETE_NAME", // done , delete name from f_locals
 "UNPACK_SEQUENCE",
 "FOR_ITER",
 "LIST_APPEND",
@@ -99,8 +99,8 @@ char* opname[] = {
 "STORE_GLOBAL",
 "DELETE_GLOBAL",
 "DUP_TOPX",
-"LOAD_CONST",
-"LOAD_NAME",
+"LOAD_CONST", // done, const is store in code object
+"LOAD_NAME",  // done, search f_locals and f_globals and f_builtins for the name
 "BUILD_TUPLE",
 "BUILD_LIST",
 "BUILD_SET",
@@ -115,7 +115,7 @@ char* opname[] = {
 "JUMP_ABSOLUTE",
 "POP_JUMP_IF_FALSE",
 "POP_JUMP_IF_TRUE",
-"LOAD_GLOBAL",
+"LOAD_GLOBAL",  // done. search name in f_globals and f_builtins
 "INVALID_OP",
 "INVALID_OP",
 "CONTINUE_LOOP",
@@ -123,8 +123,8 @@ char* opname[] = {
 "SETUP_EXCEPT",
 "SETUP_FINALLY",
 "INVALID_OP",
-"LOAD_FAST",
-"STORE_FAST",
+"LOAD_FAST",  // Get object from f_localsplus
+"STORE_FAST", // Done
 "DELETE_FAST",
 "INVALID_OP",
 "INVALID_OP",
