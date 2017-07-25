@@ -1,4 +1,5 @@
 # Copyright (c) 2017 Xiaoyong Guo
+# www.guoxiaoyong.com
 
 import StringIO
 import dis
@@ -10,6 +11,38 @@ import types
 import py_compile
 
 
+def interpret_code_flags(flag):
+  flags = {}
+  flags['CO_OPTIMIZED'] = 0x0001
+  flags['CO_NEWLOCALS'] = 0x0002
+  flags['CO_VARARGS'] = 0x0004
+  flags['CO_VARKEYWORDS'] = 0x0008
+  flags['CO_NESTED'] = 0x0010
+  flags['CO_GENERATOR'] = 0x0020
+  flags['CO_NOFREE'] = 0x0040
+  flags['CO_GENERATOR_ALLOWED'] = 0x1000 # Not used anymore.
+  flags['CO_FUTURE_DIVISION'] = 0x2000
+  flags['CO_FUTURE_ABSOLUTE_IMPORT'] = 0x4000 # do absolute imports by default
+  flags['CO_FUTURE_WITH_STATEMENT'] = 0x8000
+  flags['CO_FUTURE_PRINT_FUNCTION'] = 0x10000
+  flags['CO_FUTURE_UNICODE_LITERALS'] = 0x20000
+
+  result = []
+  for key, value in flags.items():
+    if flag & value:
+      result.append(key)
+  return ', '.join(result)
+
+
+def interpret_call_function_arg(assembly):
+  for n, line in enumerate(assembly):
+    if 'CALL_FUNCTION' in line:
+      arg = int(line.strip().split()[-1])
+      nk = (arg>>8) & 0xFF
+      na = arg & 0xFF
+      assembly[n] = line + " (na=%s, nk=%s)" % (na, nk)
+
+
 def disassemble(code, depth=0):
   original_stdout = sys.stdout
   string_io = StringIO.StringIO()
@@ -17,6 +50,7 @@ def disassemble(code, depth=0):
   dis.disassemble(code)
   sys.stdout = original_stdout
   assembly = string_io.getvalue().split('\n')
+  interpret_call_function_arg(assembly) # in-place change
   space = ' '
   assembly = '\n'.join([space*2*depth + line for line in assembly])
   return assembly
@@ -66,7 +100,7 @@ class PycViewer(object):
     self._write_string("argcount: %d" % (code.co_argcount,), depth+1)
     self._write_string("nlocals: %d" % (code.co_nlocals,), depth+1)
     self._write_string("stacksize: %d" % (code.co_stacksize,), depth+1)
-    self._write_string("flags: %04x" % (code.co_flags,), depth+1)
+    self._write_string("flags: 0x%04x (%s)" % (code.co_flags, interpret_code_flags(code.co_flags)), depth+1)
     self._write_string_hex("code", code.co_code, depth+1)
     self._write_string("names: %r" % (code.co_names,), depth+1)
     self._write_string("consts:", depth+1)
