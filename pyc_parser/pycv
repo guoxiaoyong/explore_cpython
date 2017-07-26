@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+PYC_VIEWER="python ${HOME}/.local/bin/pyc_viewer.py"
+${PYC_VIEWER} ${1}

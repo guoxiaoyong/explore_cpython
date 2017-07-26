@@ -36,11 +36,16 @@ def interpret_code_flags(flag):
 
 def interpret_call_function_arg(assembly):
   for n, line in enumerate(assembly):
-    if 'CALL_FUNCTION' in line:
-      arg = int(line.strip().split()[-1])
-      nk = (arg>>8) & 0xFF
-      na = arg & 0xFF
-      assembly[n] = line + " (na=%s, nk=%s)" % (na, nk)
+    words = line.split()
+    if 'CALL_FUNCTION' in words:
+      try:
+        arg = int(words[-1])
+      except:
+        pass
+      else:
+        nk = (arg>>8) & 0xFF
+        na = arg & 0xFF
+        assembly[n] = line + " (na=%s, nk=%s)" % (na, nk)
 
 
 def disassemble(code, depth=0):
