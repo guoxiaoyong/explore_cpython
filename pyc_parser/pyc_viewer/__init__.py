@@ -146,9 +146,12 @@ class PycViewer(object):
     print(self.codeobj_to_string(self._code))
 
 
-if __name__ == '__main__':
+def main():
   if len(sys.argv) != 2:
     print(sys.argv[0] + ' py_source_file')
   else:
     pyc_viewer = PycViewer(sys.argv[1])
     pyc_viewer.show()
+
+if __name__ == '__main__':
+  main()
