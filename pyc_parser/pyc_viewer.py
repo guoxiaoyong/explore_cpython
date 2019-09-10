@@ -1,7 +1,6 @@
 # Copyright (c) 2017 Xiaoyong Guo
 # www.guoxiaoyong.com
 
-import StringIO
 import dis
 import marshal
 import struct
@@ -9,6 +8,12 @@ import sys
 import time
 import types
 import py_compile
+
+
+try:
+  from StringIO import StringIO
+except ImportError:
+  from io import StringIO
 
 
 def interpret_code_flags(flag):
@@ -50,7 +55,7 @@ def interpret_call_function_arg(assembly):
 
 def disassemble(code, depth=0):
   original_stdout = sys.stdout
-  string_io = StringIO.StringIO()
+  string_io = StringIO()
   sys.stdout = string_io
   dis.disassemble(code)
   sys.stdout = original_stdout
@@ -65,7 +70,7 @@ class PycViewer(object):
   def __init__(self, filename):
     with open(filename, 'rb') as pysrc:
       self._content = pysrc.read()
-    if '\0' in self._content:
+    if b'\0' in self._content:
       # Assume we are reading pyc file
       self._magic = self._content[:4]
       self._modtime = struct.unpack('I', self._content[4:8])[0]
@@ -75,7 +80,7 @@ class PycViewer(object):
       self._magic = 'No magic number'
       self._modtime = 'No modification time'
       self._code = compile(self._content, filename, 'exec')
-    self._string_io = StringIO.StringIO()
+    self._string_io = StringIO()
 
   def _write_string(self, string, depth=0):
     space = ' '
@@ -85,7 +90,12 @@ class PycViewer(object):
 
   def _write_string_hex(self, label, string, depth):
     space = ' '
-    string = string.encode('hex')
+    print(string)
+    try:
+      string = string.encode('hex')
+    except:
+      string = string.hex()
+
     if len(string) < 60:
       self._string_io.write(space*2*depth)
       self._string_io.write(label + ': ')
@@ -133,7 +143,7 @@ class PycViewer(object):
     return self._string_io.getvalue()
 
   def show(self):
-    print self.codeobj_to_string(self._code)
+    print(self.codeobj_to_string(self._code))
 
 
 if __name__ == '__main__':
